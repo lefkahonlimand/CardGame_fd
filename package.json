@@ -1,0 +1,25 @@
+{
+  "name": "card-estimation-game",
+  "version": "1.0.0",
+  "description": "Multiplayer Card Estimation Game - Alpha Version",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js"
+  },
+  "keywords": ["multiplayer", "card-game", "websocket", "estimation"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "socket.io": "^4.7.5",
+    "@fastify/static": "^6.12.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

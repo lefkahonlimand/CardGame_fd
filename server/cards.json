@@ -1,0 +1,82 @@
+[
+  {
+    "id": "eiffel_h",
+    "name": "Eiffelturm",
+    "orientation": "hochformat",
+    "metric_name": "Höhe",
+    "metric_value": 330,
+    "image_url": "/images/eiffel_h.jpg"
+  },
+  {
+    "id": "eiffel_q",
+    "name": "Eiffelturm",
+    "orientation": "querformat",
+    "metric_name": "Breite",
+    "metric_value": 125,
+    "image_url": "/images/eiffel_q.jpg"
+  },
+  {
+    "id": "panther_q",
+    "name": "Schwarzer Panther",
+    "orientation": "querformat",
+    "metric_name": "Länge",
+    "metric_value": 1.5,
+    "image_url": "/images/panther_q.jpg"
+  },
+  {
+    "id": "burj_h",
+    "name": "Burj Khalifa",
+    "orientation": "hochformat",
+    "metric_name": "Höhe",
+    "metric_value": 828,
+    "image_url": "/images/burj_h.jpg"
+  },
+  {
+    "id": "empire_h",
+    "name": "Empire State Building",
+    "orientation": "hochformat",
+    "metric_name": "Höhe",
+    "metric_value": 381,
+    "image_url": "/images/empire_h.jpg"
+  },
+  {
+    "id": "tiger_q",
+    "name": "Sibirischer Tiger",
+    "orientation": "querformat",
+    "metric_name": "Länge",
+    "metric_value": 3.3,
+    "image_url": "/images/tiger_q.jpg"
+  },
+  {
+    "id": "whale_q",
+    "name": "Blauwal",
+    "orientation": "querformat",
+    "metric_name": "Länge",
+    "metric_value": 30,
+    "image_url": "/images/whale_q.jpg"
+  },
+  {
+    "id": "liberty_h",
+    "name": "Freiheitsstatue",
+    "orientation": "hochformat",
+    "metric_name": "Höhe",
+    "metric_value": 93,
+    "image_url": "/images/liberty_h.jpg"
+  },
+  {
+    "id": "elephant_q",
+    "name": "Afrikanischer Elefant",
+    "orientation": "querformat",
+    "metric_name": "Länge",
+    "metric_value": 6,
+    "image_url": "/images/elephant_q.jpg"
+  },
+  {
+    "id": "pisa_h",
+    "name": "Schiefer Turm von Pisa",
+    "orientation": "hochformat",
+    "metric_name": "Höhe",
+    "metric_value": 56,
+    "image_url": "/images/pisa_h.jpg"
+  }
+]
