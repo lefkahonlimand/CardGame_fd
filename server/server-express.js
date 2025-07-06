@@ -4,6 +4,9 @@ const socketIO = require('socket.io');
 const fs = require('fs');
 const path = require('path');
 
+// Load environment variables
+require('dotenv').config();
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
