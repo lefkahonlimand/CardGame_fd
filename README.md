@@ -1,117 +1,143 @@
-# Card Estimation Game - Alpha Version
+# Card Estimation Game 🎮
 
-Ein Multiplayer-Schätz- und Wissensspiel, bei dem Spieler versuchen, Karten mit verschiedenen Objekten und deren Eigenschaften korrekt auf einem zweidimensionalen Spielfeld zu platzieren.
+A multiplayer browser-based card estimation game with real-time communication, perfect for agile planning sessions and fun gaming sessions.
 
-## Spielkonzept
+## 🚀 Features
 
-- **Ziel**: So lange wie möglich keinen Fehler machen
-- **Spielzeit**: 5-15 Minuten pro Runde
-- **Spieler**: 2+ Spieler
-- **Karten**: Zwei Orientierungen (Hochformat/Querformat) mit verschiedenen Objekten und Messwerten
+- **Real-time Multiplayer**: Socket.io powered real-time communication
+- **Innovative UI**: Floating insertion zones for intuitive card placement
+- **Cross-Platform**: Runs on any device with a web browser
+- **Easy Deployment**: Optimized for Jetson Nano with internet tunneling via Ngrok
+- **LAN & Internet Gaming**: Play locally or over the internet
+- **Debug Tools**: Built-in debugging utilities for development
 
-## Spielregeln
+## 🛠️ Technology Stack
 
-1. Jeder Spieler hat eine konstante Anzahl Handkarten
-2. Hochformat-Karten müssen vertikal (über/unter) platziert werden
-3. Querformat-Karten müssen horizontal (links/rechts) platziert werden
-4. Spieler müssen schätzen, ob ihre Karte größer oder kleiner als die Nachbarkarte ist
-5. Bei einem falschen Zug endet die Runde sofort
+- **Backend**: Node.js with Express
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Real-time Communication**: Socket.io
+- **Deployment**: Jetson Nano, Ngrok tunneling
 
-## Tech Stack
+## 📦 Installation
 
-- **Backend**: Node.js mit Fastify
-- **WebSocket**: Socket.IO für Echtzeit-Kommunikation
-- **Frontend**: Vanilla HTML, CSS, JavaScript
-- **Prozess-Manager**: PM2
-
-## Installation
-
-### Voraussetzungen
-- Node.js (Version 18+)
+### Prerequisites
+- Node.js (v12 or higher)
 - npm
 
-### Setup
-```bash
-# Repository klonen/navigieren
-cd card-estimation-game
+### Quick Start
 
-# Abhängigkeiten installieren
-npm install
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/lefkahonlimand/CardGame_fd.git
+   cd CardGame_fd
+   ```
 
-# Server starten (Development)
-npm start
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Oder mit PM2 (Production)
-npm run pm2:start
-```
+3. **Start the server**
+   ```bash
+   npm start
+   ```
 
-## Verwendung
+4. **Open in browser**
+   ```
+   http://localhost:3000
+   ```
 
-1. Server starten
-2. Browser öffnen und zu `http://localhost:3000` navigieren
-3. Mindestens 2 Spieler verbinden
-4. "Spiel starten" klicken
-5. Karten aus der Hand auswählen und mit X,Y-Koordinaten platzieren
+## 🖥️ Jetson Nano Deployment
 
-## Spielsteuerung
+### Setup Scripts
+The repository includes convenient scripts for Jetson Nano deployment:
 
-- **Karte auswählen**: Auf Handkarte klicken
-- **Karte platzieren**: X/Y-Koordinaten eingeben und "Karte platzieren" drücken
-- **Koordinatensystem**: (0,0) ist das Zentrum, positive Y geht nach oben
+- `start-game-server.sh` - Start the game server
+- `stop-game-server.sh` - Stop the game server
 
-## Projektstruktur
+### Internet Access via Ngrok
+For external access, the setup supports Ngrok tunneling to make your local game available over the internet securely.
+
+## 📁 Project Structure
 
 ```
 card-estimation-game/
-├── server/
-│   ├── server.js          # Hauptserver mit Fastify + Socket.IO
-│   └── cards.json         # Kartendatenbank
-├── client/
-│   ├── index.html         # Frontend
-│   └── client.js          # Client-JavaScript
-├── package.json
-├── ecosystem.config.js    # PM2 Konfiguration
-└── README.md
+├── client/                 # Frontend files
+│   ├── index.html         # Main game interface
+│   ├── beta.html          # Beta version interface
+│   ├── beta-game.js       # Beta game logic
+│   ├── beta-styles.css    # Beta styling
+│   ├── debug-utils.js     # Debug utilities
+│   └── image-manager.js   # Image handling
+├── server/                # Backend files
+│   ├── server-express.js  # Main Express server
+│   ├── server-fastify.js  # Alternative Fastify server
+│   └── cards.json         # Card data
+├── docs/                  # Documentation
+├── start-game-server.sh   # Start script
+├── stop-game-server.sh    # Stop script
+└── package.json           # Dependencies
 ```
 
-## Für Jetson Nano Deployment
+## 🎯 Game Versions
 
-Das Projekt ist für ARM64-Architektur optimiert und läuft auf Jetson Nano:
+- **Alpha Version**: Basic functionality with core game mechanics
+- **Beta Version**: Enhanced UI, floating insertion zones, improved user experience
 
+## 🔧 Development
+
+### Debug Mode
+The game includes comprehensive debug tools accessible via `debug-utils.js` for development and troubleshooting.
+
+### Testing
 ```bash
-# PM2 global installieren (falls nicht vorhanden)
-npm install -g pm2
-
-# Projekt starten
-pm2 start ecosystem.config.js
-
-# Status prüfen
-pm2 status
-
-# Logs anzeigen
-pm2 logs card-estimation-game
+node test-debug.js
 ```
 
-## Alpha Version Features
+## 🌐 Network Configuration
 
-✅ Grundlegende Spiellogik  
-✅ Multiplayer WebSocket-Verbindung  
-✅ Kartenvalidierung nach Spielregeln  
-✅ Einfaches Frontend für Tests  
-✅ PM2 Konfiguration für Produktion  
+### Local Network (LAN)
+- Default port: 3000
+- Access via: `http://[JETSON_IP]:3000`
 
-## Bekannte Einschränkungen (Alpha)
+### Internet Access
+- Uses Ngrok for secure tunneling
+- Follow setup instructions in `JETSON_SETUP.md`
 
-- Minimales Design (funktional, nicht schön)
-- Keine Persistierung von Spielständen
-- Kein Replay-System
-- Begrenzte Kartenmenge (10 Beispielkarten)
-- Keine Benutzerregistrierung
+## 📖 Documentation
 
-## Nächste Schritte
+- `README-BETA.md` - Beta version specific information
+- `BETA_FIXES_SUMMARY.md` - Recent fixes and improvements
+- `DEBUG_GUIDE.md` - Debugging guide
+- `JETSON_SETUP.md` - Jetson Nano setup instructions
+- `docs/` - Additional documentation
 
-- UI/UX Verbesserungen
-- Mehr Karten hinzufügen
-- Spielstatistiken
-- Bessere Visualisierung des Spielbretts
-- Mobile Optimierung
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🔗 Links
+
+- **Repository**: https://github.com/lefkahonlimand/CardGame_fd
+- **Issues**: https://github.com/lefkahonlimand/CardGame_fd/issues
+
+## 🎮 How to Play
+
+1. Open the game in your browser
+2. Enter your player name
+3. Wait for other players to join
+4. Start estimating with the provided cards
+5. Use the floating insertion zones for precise card placement
+6. Enjoy real-time multiplayer card estimation!
+
+---
+
+**Developed with ❤️ for agile teams and gaming enthusiasts**
