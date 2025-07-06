@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Estimation Game - Beta</title>
-    <link rel="stylesheet" href="beta-styles.css">
+    <link rel="stylesheet" href="beta-styles.css?v=20250705-22">
 </head>
 <body>
     <div class="app-container">
@@ -25,10 +25,7 @@
                     <div class="deck-count" id="deck-count">0</div>
                     <div class="deck-label">Karten im Stapel</div>
                 </div>
-                <div class="game-controls">
-                    <button id="start-game-btn" class="start-btn" disabled>Spiel starten</button>
-                    <button id="game-menu-btn" class="menu-btn">⚙️ Menü</button>
-                </div>
+                <button id="start-game-btn" class="start-btn" disabled>Spiel starten</button>
             </div>
         </header>
 
@@ -79,40 +76,13 @@
                 <div class="card-reveal" id="card-reveal"></div>
             </div>
             <div class="modal-footer">
-                <button id="new-game-btn" class="btn btn-primary" onclick="console.log('BUTTON CLICKED!'); handleNewGameClick();">Neue Runde</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Game Menu Modal -->
-    <div class="modal-overlay" id="game-menu-modal" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>🎮 Spielmenü</h2>
-            </div>
-            <div class="modal-body">
-                <div class="menu-options">
-                    <button id="restart-game-btn" class="menu-option-btn">🔄 Spiel neustarten</button>
-                    <button id="end-game-btn" class="menu-option-btn" style="display: none;">⏹️ Spiel beenden</button>
-                    <button id="refresh-page-btn" class="menu-option-btn">🔃 Seite neu laden</button>
-                    <hr class="menu-divider">
-                    <div class="game-info">
-                        <h4>Spielstatus:</h4>
-                        <p id="menu-game-status">Laden...</p>
-                        <h4>Verbindung:</h4>
-                        <p id="menu-connection-status">Laden...</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="close-menu-btn" class="btn btn-primary">Schließen</button>
+                <button id="new-game-btn" class="btn btn-primary" onclick="handleNewGameClick()">Neue Runde</button>
             </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="debug-utils.js"></script>
-    <script src="image-manager.js"></script>
-    <script src="beta-game.js"></script>
+    <script src="image-manager.js?v=20250705-22"></script>
+    <script src="beta-game.js?v=20250705-22"></script>
 </body>
 </html>

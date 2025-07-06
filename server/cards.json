@@ -1,82 +1,144 @@
 [
   {
-    "id": "eiffel_h",
+    "id": "eiffel",
     "name": "Eiffelturm",
-    "orientation": "hochformat",
-    "metric_name": "Höhe",
-    "metric_value": 330,
-    "image_url": "/images/eiffel_h.jpg"
+    "height": 330,
+    "width": 125,
+    "image_url": "/images/eiffel.jpg"
   },
   {
-    "id": "eiffel_q",
-    "name": "Eiffelturm",
-    "orientation": "querformat",
-    "metric_name": "Breite",
-    "metric_value": 125,
-    "image_url": "/images/eiffel_q.jpg"
-  },
-  {
-    "id": "panther_q",
-    "name": "Schwarzer Panther",
-    "orientation": "querformat",
-    "metric_name": "Länge",
-    "metric_value": 1.5,
-    "image_url": "/images/panther_q.jpg"
-  },
-  {
-    "id": "burj_h",
+    "id": "burj",
     "name": "Burj Khalifa",
-    "orientation": "hochformat",
-    "metric_name": "Höhe",
-    "metric_value": 828,
-    "image_url": "/images/burj_h.jpg"
+    "height": 828,
+    "width": 39,
+    "image_url": "/images/burj.jpg"
   },
   {
-    "id": "empire_h",
+    "id": "empire",
     "name": "Empire State Building",
-    "orientation": "hochformat",
-    "metric_name": "Höhe",
-    "metric_value": 381,
-    "image_url": "/images/empire_h.jpg"
+    "height": 381,
+    "width": 129,
+    "image_url": "/images/empire.jpg"
   },
   {
-    "id": "tiger_q",
-    "name": "Sibirischer Tiger",
-    "orientation": "querformat",
-    "metric_name": "Länge",
-    "metric_value": 3.3,
-    "image_url": "/images/tiger_q.jpg"
-  },
-  {
-    "id": "whale_q",
-    "name": "Blauwal",
-    "orientation": "querformat",
-    "metric_name": "Länge",
-    "metric_value": 30,
-    "image_url": "/images/whale_q.jpg"
-  },
-  {
-    "id": "liberty_h",
+    "id": "liberty",
     "name": "Freiheitsstatue",
-    "orientation": "hochformat",
-    "metric_name": "Höhe",
-    "metric_value": 93,
-    "image_url": "/images/liberty_h.jpg"
+    "height": 93,
+    "width": 17,
+    "image_url": "/images/liberty.jpg"
   },
   {
-    "id": "elephant_q",
-    "name": "Afrikanischer Elefant",
-    "orientation": "querformat",
-    "metric_name": "Länge",
-    "metric_value": 6,
-    "image_url": "/images/elephant_q.jpg"
+    "id": "colosseum",
+    "name": "Kolosseum",
+    "height": 48,
+    "width": 188,
+    "image_url": "/images/colosseum.jpg"
   },
   {
-    "id": "pisa_h",
+    "id": "taj",
+    "name": "Taj Mahal",
+    "height": 73,
+    "width": 60,
+    "image_url": "/images/taj.jpg"
+  },
+  {
+    "id": "pisa",
     "name": "Schiefer Turm von Pisa",
-    "orientation": "hochformat",
-    "metric_name": "Höhe",
-    "metric_value": 56,
-    "image_url": "/images/pisa_h.jpg"
+    "height": 56,
+    "width": 15,
+    "image_url": "/images/pisa.jpg"
+  },
+  {
+    "id": "redwood",
+    "name": "Mammutbaum",
+    "height": 115,
+    "width": 8.2,
+    "image_url": "/images/redwood.jpg"
+  },
+  {
+    "id": "giraffe",
+    "name": "Giraffe",
+    "height": 5.5,
+    "width": 4.3,
+    "image_url": "/images/giraffe.jpg"
+  },
+  {
+    "id": "panther",
+    "name": "Schwarzer Panther",
+    "height": 0.68,
+    "width": 1.5,
+    "image_url": "/images/panther.jpg"
+  },
+  {
+    "id": "tiger",
+    "name": "Sibirischer Tiger",
+    "height": 1.05,
+    "width": 3.3,
+    "image_url": "/images/tiger.jpg"
+  },
+  {
+    "id": "whale",
+    "name": "Blauwal",
+    "height": 3.0,
+    "width": 30,
+    "image_url": "/images/whale.jpg"
+  },
+  {
+    "id": "elephant",
+    "name": "Afrikanischer Elefant",
+    "height": 3.3,
+    "width": 6,
+    "image_url": "/images/elephant.jpg"
+  },
+  {
+    "id": "anaconda",
+    "name": "Anaconda",
+    "height": 0.3,
+    "width": 8.5,
+    "image_url": "/images/anaconda.jpg"
+  },
+  {
+    "id": "shark",
+    "name": "Weißer Hai",
+    "height": 1.8,
+    "width": 6.4,
+    "image_url": "/images/shark.jpg"
+  },
+  {
+    "id": "crocodile",
+    "name": "Krokodil",
+    "height": 0.9,
+    "width": 7,
+    "image_url": "/images/crocodile.jpg"
+  },
+  {
+    "id": "bus",
+    "name": "Stadtbus",
+    "height": 3.2,
+    "width": 12,
+    "image_url": "/images/bus.jpg"
+  },
+  {
+    "id": "airplane",
+    "name": "Boeing 747",
+    "height": 19.4,
+    "width": 70.6,
+    "image_url": "/images/airplane.jpg"
+  },
+  {
+    "id": "football",
+    "name": "Fußballfeld",
+    "height": null,
+    "width": 105,
+    "allowed_axes": ["horizontal"],
+    "image_url": "/images/football.jpg"
+  },
+  {
+    "id": "zugspitze",
+    "name": "Zugspitze",
+    "height": 2962,
+    "width": null,
+    "allowed_axes": ["vertical"],
+    "image_url": "/images/zugspitze.jpg"
   }
 ]

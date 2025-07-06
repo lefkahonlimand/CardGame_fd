@@ -1,3 +1,114 @@
+# Card Estimation Game - Jetson Nano Setup
+
+Anleitung um das Spiel auf dem Jetson Nano zu installieren und über das Internet zugänglich zu machen.
+
+## 1. Projekt auf Jetson kopieren
+
+```bash
+# Von deinem PC zum Jetson
+scp -r card-estimation-game/ jetson@JETSON-IP:/home/jetson/
+
+# Oder via Git
+ssh jetson@JETSON-IP
+cd /home/jetson
+git clone <dein-repo-url> card-estimation-game
+```
+
+## 2. Dependencies installieren
+
+```bash
+ssh jetson@JETSON-IP
+cd /home/jetson/card-estimation-game
+
+# Node.js installieren (falls nicht vorhanden)
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Projekt Dependencies
+npm install
+
+# Ngrok installieren
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+
+# Ngrok Account erstellen und Token setzen
+ngrok config add-authtoken DEIN_NGROK_TOKEN
+```
+
+## 3. Scripts ausführbar machen
+
+```bash
+chmod +x start-game-server.sh
+chmod +x stop-game-server.sh
+```
+
+## 4. Spiel starten
+
+```bash
+# Server starten und Internet-Tunnel erstellen
+./start-game-server.sh
+```
+
+Das Script zeigt dir eine öffentliche URL an, die deine Freunde verwenden können!
+
+## 5. Spiel stoppen
+
+```bash
+# Alles stoppen
+./stop-game-server.sh
+```
+
+## 6. Optional: Systemd Service (Auto-Start)
+
+```bash
+# Service-Datei erstellen
+sudo tee /etc/systemd/system/card-game.service << EOF
+[Unit]
+Description=Card Estimation Game Server
+After=network.target
+
+[Service]
+Type=forking
+User=jetson
+WorkingDirectory=/home/jetson/card-estimation-game
+ExecStart=/home/jetson/card-estimation-game/start-game-server.sh
+ExecStop=/home/jetson/card-estimation-game/stop-game-server.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Service aktivieren
+sudo systemctl enable card-game
+sudo systemctl start card-game
+
+# Status prüfen
+sudo systemctl status card-game
+```
+
+## Sicherheit
+
+- Ngrok erstellt HTTPS-Tunnel (sicher)
+- Keine Ports im Router öffnen nötig
+- Kein direkter Zugriff auf Jetson
+- Tunnel kann jederzeit gestoppt werden
+
+## Tipps
+
+- **URL teilen:** `cat current-game-url.txt` zeigt aktuelle URL
+- **Logs prüfen:** `tail -f game-server.log` für Server-Logs
+- **Status prüfen:** `ps aux | grep node` zeigt laufende Prozesse
+- **Neustart:** `./stop-game-server.sh && ./start-game-server.sh`
+
+## Troubleshooting
+
+- **Port bereits belegt:** Stoppe alte Prozesse mit `./stop-game-server.sh`
+- **Ngrok Fehler:** Prüfe Token mit `ngrok config check`
+- **Server startet nicht:** Prüfe `game-server.log` für Fehler
+- **URL nicht erreichbar:** Prüfe Ngrok Status auf http://localhost:4040
+
 # Jetson Nano Setup Guide
 
 ## Systemanforderungen
