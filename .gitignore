@@ -91,3 +91,56 @@ logs/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# 🔐 Sichere lokale Konfigurationsdateien
+.env.local.secure
+*.secure
+secure/
+passwords.txt
+keys/
+
+# 🚫 Sensible Daten und lokale Konfigurationen
+*password*
+*secret*
+*token*
+*auth*
+*.key
+*.pem
+*.cert
+*.p12
+*.pfx
+
+# 🏠 Lokale Entwicklungstools und Cache
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# 🖥️ Betriebssystem-spezifische Dateien
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 📊 Backup und temporäre Dateien
+backup/
+*.backup
+*.bak
+*.tmp
+*.temp
+
+# 🌐 Ngrok und Tunnel-Konfigurationen
+.ngrok2/
+ngrok.log
+tunnel.log
+current-game-url.txt
+
+# 🛠️ Lokale Scripts mit sensiblen Daten
+local-*.sh
+private-*.sh
+my-*.sh
+
+# 📋 Wartungsanleitungen mit sensiblen Daten (nur lokal)
+WARTUNGSANLEITUNG_KOMPLETT.md

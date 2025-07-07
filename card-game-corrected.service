@@ -1,0 +1,18 @@
+[Unit]
+Description=Card Estimation Game
+After=network.target
+
+[Service]
+Type=simple
+User=fd1337
+Group=fd1337
+WorkingDirectory=/home/fd1337/card-estimation-game
+ExecStart=/home/fd1337/card-estimation-game/start-game-server.sh
+ExecStop=/home/fd1337/card-estimation-game/stop-game-server.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
