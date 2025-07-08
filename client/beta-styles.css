@@ -258,7 +258,7 @@ body {
     width: 4000px;
     height: 4000px;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
     /* FIXED: Smooth transforms for zoom/pan */
     transition: transform 0.05s ease-out;
 }

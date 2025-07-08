@@ -1,9 +1,14 @@
-// 🎯 UNIFIED DROP-ZONE SYSTEM - Core Calculator Class
+// 🎯 UNIFIED DROP-ZONE SYSTEM - Core Calculator Class with Advanced Grid
 class DropZoneCalculator {
     constructor(gameState) {
         this.gameState = gameState;
         this.board = gameState.board || {};
         this.boardPositions = new Set(Object.keys(this.board));
+        
+        // 🎯 ADVANCED GRID SYSTEM - Support for half-step insertion positions
+        this.GRID_STEP = 1.0;           // Normal card positions: 0, 1, 2, 3
+        this.INSERTION_STEP = 0.5;      // Insertion positions: 0.5, 1.5, 2.5
+        this.INSERTION_OFFSET = 0.5;    // Offset for insertion positions
     }
     
     /**
@@ -114,49 +119,96 @@ class DropZoneCalculator {
     }
     
     /**
-     * Add insertion positions between existing cards
+     * 🎯 ADVANCED INSERTION SYSTEM - Add permanent insertion dots between consecutive cards
      */
     addInsertionZones(validPositions) {
+        console.log('🎯 DEBUG: Advanced insertion system - adding permanent insertion dots');
+
         const horizontalCards = this.getCardsOnAxis('horizontal');
         const verticalCards = this.getCardsOnAxis('vertical');
         
-        // Horizontal insertions (between cards on x=?, y=0)
+        console.log('🎯 DEBUG: Cards on axes:', {
+            horizontalCount: horizontalCards.length,
+            verticalCount: verticalCards.length,
+            horizontalCards: horizontalCards.map(c => ({ x: c.x, name: c.card.name })),
+            verticalCards: verticalCards.map(c => ({ y: c.y, name: c.card.name }))
+        });
+
+        // 🎯 HORIZONTAL INSERTION DOTS - Between consecutive horizontal cards
         if (horizontalCards.length >= 2) {
+            console.log('🎯 DEBUG: Creating horizontal insertion dots...');
             horizontalCards.sort((a, b) => a.x - b.x);
-            for (let i = 1; i < horizontalCards.length; i++) {
-                const insertX = horizontalCards[i].x;
-                const insertPos = `${insertX},0`;
+            
+            // Create insertion dots BETWEEN each pair of consecutive cards
+            for (let i = 0; i < horizontalCards.length - 1; i++) {
+                const currentCard = horizontalCards[i];
+                const nextCard = horizontalCards[i + 1];
                 
-                if (!this.boardPositions.has(insertPos)) {
-                    validPositions.push({
-                        x: insertX,
-                        y: 0,
-                        type: 'insertion',
-                        axis: 'horizontal',
-                        description: `Insert before card at (${insertX},0)`
-                    });
-                }
+                // Calculate the midpoint between cards (using half-step coordinates)
+                const insertX = currentCard.x + this.INSERTION_OFFSET;
+                
+                console.log(`🎯 DEBUG: Creating horizontal insertion dot between ${currentCard.x} and ${nextCard.x} at x=${insertX}`);
+                
+                const insertionZone = {
+                    x: insertX,
+                    y: 0,
+                    type: 'insertion',
+                    axis: 'horizontal',
+                    description: `Insert between (${currentCard.x},0) and (${nextCard.x},0)`
+                };
+                validPositions.push(insertionZone);
+                console.log('🎯 DEBUG: Added horizontal insertion dot:', insertionZone);
             }
         }
         
-        // Vertical insertions (between cards on x=0, y=?)
+        // 🎯 VERTICAL INSERTION DOTS - Between consecutive vertical cards
         if (verticalCards.length >= 2) {
+            console.log('🎯 DEBUG: Creating vertical insertion dots...');
             verticalCards.sort((a, b) => a.y - b.y);
-            for (let i = 1; i < verticalCards.length; i++) {
-                const insertY = verticalCards[i].y;
-                const insertPos = `0,${insertY}`;
+            
+            // Create insertion dots BETWEEN each pair of consecutive cards
+            for (let i = 0; i < verticalCards.length - 1; i++) {
+                const currentCard = verticalCards[i];
+                const nextCard = verticalCards[i + 1];
                 
-                if (!this.boardPositions.has(insertPos)) {
-                    validPositions.push({
-                        x: 0,
-                        y: insertY,
-                        type: 'insertion',
-                        axis: 'vertical',
-                        description: `Insert before card at (0,${insertY})`
-                    });
-                }
+                // Calculate the midpoint between cards (using half-step coordinates)
+                const insertY = currentCard.y + this.INSERTION_OFFSET;
+                
+                console.log(`🎯 DEBUG: Creating vertical insertion dot between ${currentCard.y} and ${nextCard.y} at y=${insertY}`);
+                
+                const insertionZone = {
+                    x: 0,
+                    y: insertY,
+                    type: 'insertion',
+                    axis: 'vertical',
+                    description: `Insert between (0,${currentCard.y}) and (0,${nextCard.y})`
+                };
+                validPositions.push(insertionZone);
+                console.log('🎯 DEBUG: Added vertical insertion dot:', insertionZone);
             }
         }
+        
+        console.log(`🎯 DEBUG: Advanced insertion system completed`);
+    }
+
+    /**
+     * Helper method to analyze gaps in positions
+     */
+    analyzeGaps(sortedPositions) {
+        const gaps = [];
+        for (let i = 0; i < sortedPositions.length - 1; i++) {
+            const current = sortedPositions[i];
+            const next = sortedPositions[i + 1];
+            const gap = next - current;
+            if (gap > 1) {
+                gaps.push({
+                    between: [current, next],
+                    gapSize: gap,
+                    insertionPosition: current + 1
+                });
+            }
+        }
+        return gaps;
     }
     
     /**
@@ -379,12 +431,8 @@ class GameManager {
             dropZones.style.transform = transform;
         }
         
-        // FIXED: Also apply to any insertion indicators
-        const insertionIndicators = this.elements.gameBoard.querySelectorAll('.insertion-indicator, .floating-insertion-zone');
-        insertionIndicators.forEach(indicator => {
-            // These are positioned relative to the board, so they need the same transform
-            indicator.parentElement.style.transform = transform;
-        });
+        // FIXED: Insertion indicators are already children of drop-zones container
+        // which already gets the transform applied above, so no additional transform needed
     }
 
     initializeElements() {
@@ -406,7 +454,6 @@ class GameManager {
             modalMessage: document.getElementById('modal-message'),
             cardReveal: document.getElementById('card-reveal'),
             newGameBtn: document.getElementById('new-game-btn'),
-            // Game Menu Elements
             gameMenuBtn: document.getElementById('game-menu-btn'),
             gameMenuModal: document.getElementById('game-menu-modal'),
             restartGameBtn: document.getElementById('restart-game-btn'),
@@ -416,6 +463,12 @@ class GameManager {
             menuGameStatus: document.getElementById('menu-game-status'),
             menuConnectionStatus: document.getElementById('menu-connection-status')
         };
+
+        for (const [key, element] of Object.entries(this.elements)) {
+            if (!element) {
+                console.warn(`Element for '${key}' not found in DOM.`);
+            }
+        }
         
         // FIXED: Initialize zoom/pan functionality
         this.initializeZoomPanFunctionality();
@@ -854,12 +907,71 @@ class GameManager {
         
         console.log('🎯 DEBUG: Unified Drop-Zone System calculated positions:', validPositions);
         
+        // Debug: Analysiere die berechneten Positionen nach Typ
+        const positionsByType = validPositions.reduce((acc, pos) => {
+            acc[pos.type] = acc[pos.type] || [];
+            acc[pos.type].push(pos);
+            return acc;
+        }, {});
+        
+        console.log('🎯 DEBUG: Positions by type:', positionsByType);
+        
+        // Spezifische Debug-Info für Insertion-Zones
+        const insertionZones = positionsByType.insertion || [];
+        if (insertionZones.length > 0) {
+            console.log('🎯 DEBUG: Found insertion zones!', insertionZones);
+        } else {
+            console.log('🎯 DEBUG: NO insertion zones found - checking why...');
+            console.log('🎯 DEBUG: Board positions:', Array.from(this.gameState.board ? Object.keys(this.gameState.board) : []));
+            
+            // Prüfe ob das Board die richtige Struktur für Insertion-Zones hat
+            if (this.gameState.board) {
+                const positions = Object.keys(this.gameState.board);
+                const horizontalPositions = positions.filter(pos => {
+                    const [x, y] = pos.split(',').map(Number);
+                    return y === 0;
+                }).map(pos => {
+                    const [x, y] = pos.split(',').map(Number);
+                    return x;
+                }).sort((a, b) => a - b);
+                
+                const verticalPositions = positions.filter(pos => {
+                    const [x, y] = pos.split(',').map(Number);
+                    return x === 0;
+                }).map(pos => {
+                    const [x, y] = pos.split(',').map(Number);
+                    return y;
+                }).sort((a, b) => a - b);
+                
+                console.log('🎯 DEBUG: Analysis for missing insertions:', {
+                    horizontalPositions,
+                    verticalPositions
+                });
+            }
+        }
+        
         // Erstelle einheitliche Drop-Zones für alle gültigen Positionen
         validPositions.forEach(positionData => {
+            console.log(`🎯 DEBUG: Creating ${positionData.type} drop zone at (${positionData.x}, ${positionData.y})`);
             this.createUnifiedDropZone(positionData);
         });
         
         console.log(`🎯 DEBUG: Created ${validPositions.length} unified drop zones`);
+        
+        // Final DOM check
+        setTimeout(() => {
+            const domDropZones = this.elements.dropZones.querySelectorAll('.drop-zone');
+            const insertionZonesInDOM = this.elements.dropZones.querySelectorAll('[data-type="insertion"]');
+            console.log('🎯 DEBUG: DOM verification:', {
+                totalDropZonesInDOM: domDropZones.length,
+                insertionZonesInDOM: insertionZonesInDOM.length,
+                expectedInsertions: insertionZones.length
+            });
+            
+            if (insertionZones.length > 0 && insertionZonesInDOM.length === 0) {
+                console.log('🚨 PROBLEM: Expected insertion zones but none found in DOM!');
+            }
+        }, 100);
     }
     
     /**
@@ -880,8 +992,12 @@ class GameManager {
         // Visual styling based on type
         this.styleDropZoneByType(dropZone, type);
         
-        // Position calculation
-        this.positionDropZone(dropZone, x, y);
+        // Position calculation - use special positioning for insertion dots
+        if (type === 'insertion') {
+            this.positionInsertionDot(dropZone, x, y);
+        } else {
+            this.positionDropZone(dropZone, x, y);
+        }
         
         // Event handlers - same for all types
         this.attachDropZoneEvents(dropZone);
@@ -894,51 +1010,89 @@ class GameManager {
     }
     
     /**
-     * Style drop zones based on their type
+     * 🎯 ADVANCED STYLING - Style drop zones based on their type with visual hierarchy
      */
     styleDropZoneByType(dropZone, type) {
-        // Base styles
+        // Type-specific styles with proper visual hierarchy
+        const typeStyles = {
+            origin: {
+                // Large, prominent origin zone
+                width: '100px',
+                height: '140px',
+                borderRadius: '8px',
+                border: '3px dashed #22c55e',
+                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                fontSize: '14px',
+                opacity: '0.8',
+                content: '🎯'
+            },
+            extension: {
+                // Medium-sized extension zones
+                width: '100px',
+                height: '140px',
+                borderRadius: '8px',
+                border: '2px dashed #3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                fontSize: '12px',
+                opacity: '0.7',
+                content: '➕'
+            },
+            insertion: {
+                // 🎯 SMALL, DISCRETE INSERTION DOTS
+                width: '25px',
+                height: '25px',
+                borderRadius: '50%',
+                border: '2px solid #f97316',
+                backgroundColor: 'rgba(249, 115, 22, 0.4)',
+                fontSize: '8px',
+                opacity: '0.6',
+                content: '•'
+            }
+        };
+        
+        // Base styles common to all types
         const baseStyle = {
             position: 'absolute',
-            width: '100px',
-            height: '140px',
-            borderRadius: '8px',
-            border: '2px dashed',
-            zIndex: '3',
+            zIndex: '4',
             transition: 'all 0.3s ease',
-            opacity: '0.7',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '12px',
-            fontWeight: 'bold'
-        };
-        
-        // Type-specific styles
-        const typeStyles = {
-            origin: {
-                backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                borderColor: '#22c55e',
-                content: '🎯'
-            },
-            extension: {
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                borderColor: '#3b82f6',
-                content: '➕'
-            },
-            insertion: {
-                backgroundColor: 'rgba(249, 115, 22, 0.2)',
-                borderColor: '#f97316',
-                content: '📥'
-            }
+            fontWeight: 'bold',
+            pointerEvents: 'auto'
         };
         
         const style = { ...baseStyle, ...typeStyles[type] };
         
-        // Apply styles
+        // Apply all styles
         Object.assign(dropZone.style, style);
         dropZone.textContent = style.content;
+        
+        // Special handling for insertion dots positioning
+        if (type === 'insertion') {
+            // Ensure insertion dots are perfectly centered on their half-coordinate positions
+            this.positionInsertionDot(dropZone, parseFloat(dropZone.dataset.x), parseFloat(dropZone.dataset.y));
+        }
+    }
+    
+    /**
+     * 🎯 INSERTION DOT POSITIONING - Special positioning for half-coordinate insertion dots
+     */
+    positionInsertionDot(dropZone, x, y) {
+        const gridSize = 150;
+        const dotSize = 25;
+        
+        // 🎯 ADVANCED POSITIONING - Handle half-coordinates for perfect centering
+        // Normal cards are at integer coordinates (0, 1, 2)
+        // Insertion dots are at half-coordinates (0.5, 1.5, 2.5)
+        const posX = (x * gridSize) + 2000 - (dotSize / 2);
+        const posY = (-y * gridSize) + 2000 - (dotSize / 2);
+        
+        dropZone.style.left = `${posX}px`;
+        dropZone.style.top = `${posY}px`;
+        
+        console.log(`🎯 DEBUG: Positioned insertion dot at (${x}, ${y}) -> DOM (${posX}, ${posY})`);
     }
     
     /**
@@ -1449,8 +1603,45 @@ class GameManager {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', card.id);
         
-        // Generiere dynamische Insertion-Zones beim Drag-Start
-        this.showInsertionIndicators();
+        // FIXED: No need to generate additional insertion indicators
+        // The unified drop zone system already creates all necessary drop zones including insertion zones
+        // Just highlight existing insertion zones to make them more visible during drag
+        this.highlightInsertionZones();
+    }
+    
+    highlightInsertionZones() {
+        console.log('🔧 DEBUG: highlightInsertionZones called');
+        
+        // Find all insertion zones created by the unified system
+        const insertionZones = this.elements.dropZones.querySelectorAll('[data-type="insertion"]');
+        
+        console.log(`🔧 DEBUG: Found ${insertionZones.length} insertion zones to highlight`);
+        
+        // Highlight each insertion zone
+        insertionZones.forEach((zone, index) => {
+            console.log(`🔧 DEBUG: Highlighting insertion zone ${index} at position (${zone.dataset.x}, ${zone.dataset.y})`);
+            
+            // Add special highlighting for insertion zones during drag
+            zone.style.backgroundColor = 'rgba(249, 115, 22, 0.4)';
+            zone.style.borderColor = '#f97316';
+            zone.style.borderWidth = '3px';
+            zone.style.animation = 'pulse 2s infinite';
+            zone.style.transform = 'scale(1.1)';
+            zone.style.opacity = '0.9';
+            zone.textContent = '📥';
+        });
+    }
+    
+    removeInsertionHighlight() {
+        console.log('🔧 DEBUG: removeInsertionHighlight called');
+        
+        // Remove highlighting from all insertion zones
+        const insertionZones = this.elements.dropZones.querySelectorAll('[data-type="insertion"]');
+        
+        insertionZones.forEach(zone => {
+            // Reset to default insertion zone styling
+            this.styleDropZoneByType(zone, 'insertion');
+        });
     }
 
     handleDragEnd(e) {
@@ -1566,6 +1757,9 @@ class GameManager {
         indicator.style.opacity = '0.7';
         indicator.style.pointerEvents = 'auto';
         
+        // DEBUG: Log created indicator position
+        console.log(`🔧 DEBUG: Created insertion indicator at (${x},${y}) -> DOM position (${posX},${posY})`);
+        
         // Hover-Effekt
         indicator.addEventListener('mouseenter', () => {
             indicator.style.transform = 'scale(1.5)';
@@ -1599,6 +1793,9 @@ class GameManager {
         
         // FIXED: Add to drop-zones container instead of game-board
         this.elements.dropZones.appendChild(indicator);
+        
+        // DEBUG: Verify DOM insertion
+        console.log(`🔧 DEBUG: Insertion indicator appended to drop-zones. Current indicators count: ${this.elements.dropZones.querySelectorAll('.insertion-indicator').length}`);
     }
     
     createFloatingInsertionZone(x, y, originalPosition) {
