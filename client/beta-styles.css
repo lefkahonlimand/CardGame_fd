@@ -45,7 +45,7 @@ body {
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     color: var(--text-primary);
     height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* Keep for overall layout */
 }
 
 /* App Container */
@@ -160,19 +160,36 @@ body {
 /* Main Game Area */
 .game-main {
     position: relative;
-    overflow: hidden;
+    /* FIXED: Allow content to extend beyond boundaries for zoom/pan */
+    overflow: visible;
     background: var(--bg-card);
     border-radius: 12px;
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border);
+    /* FIXED: Ensure full available space is used */
+    min-height: 0;
+    /* FIXED: Establish stacking context */
+    z-index: 1;
 }
 
 .game-board {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: 500px;
-    overflow: auto;
+    /* FIXED: Ensure adequate minimum height */
+    min-height: 400px;
+    /* FIXED: Hide overflow but allow transforms inside */
+    overflow: hidden;
+    /* FIXED: Cursor management for pan mode */
+    cursor: grab;
+    /* FIXED: Prevent text selection during pan */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    /* FIXED: Establish isolated transform context */
+    transform-style: flat;
+    /* FIXED: Create proper stacking context */
+    z-index: 0;
     background: linear-gradient(45deg, #f8fafc 25%, transparent 25%, transparent 75%, #f8fafc 75%), 
                 linear-gradient(-45deg, #f8fafc 25%, transparent 25%, transparent 75%, #f8fafc 75%);
     background-size: 40px 40px;
@@ -182,13 +199,20 @@ body {
 /* Achsen-System */
 .axis-grid {
     position: absolute;
+    /* FIXED: Perfect centering for zoom/pan system */
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 2000px;
-    height: 2000px;
+    /* FIXED: Initial transform - JS will modify this */
+    transform: translate(-50%, -50%) scale(1);
+    /* FIXED: Large coordinate system for zoom/pan */
+    width: 4000px;
+    height: 4000px;
     pointer-events: none;
     z-index: 1;
+    /* FIXED: Smooth transforms for zoom/pan */
+    transition: transform 0.05s ease-out;
+    /* FIXED: Ensure grid is visible */
+    overflow: visible;
 }
 
 .axis {
@@ -224,7 +248,37 @@ body {
     box-shadow: 0 0 0 4px var(--bg-card), 0 0 0 6px var(--primary);
 }
 
-/* Drop Zones */
+/* Drop Zones Container */
+.drop-zones {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* FIXED: Initial transform matching axis-grid */
+    transform: translate(-50%, -50%) scale(1);
+    width: 4000px;
+    height: 4000px;
+    pointer-events: none;
+    z-index: 2;
+    /* FIXED: Smooth transforms for zoom/pan */
+    transition: transform 0.05s ease-out;
+}
+
+/* Board Cards Container */
+.board-cards {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* FIXED: Initial transform matching axis-grid */
+    transform: translate(-50%, -50%) scale(1);
+    width: 4000px;
+    height: 4000px;
+    pointer-events: none;
+    z-index: 3;
+    /* FIXED: Smooth transforms for zoom/pan */
+    transition: transform 0.05s ease-out;
+}
+
+/* Individual Drop Zones */
 .drop-zone {
     position: absolute;
     width: var(--card-width);
@@ -234,6 +288,8 @@ body {
     background: rgba(37, 99, 235, 0.05);
     transition: all 0.3s ease;
     z-index: 2;
+    /* FIXED: Ensure drop zones are clickable */
+    pointer-events: auto;
 }
 
 .drop-zone.active {
@@ -712,6 +768,61 @@ body {
 
 .game-info p:last-child {
     margin-bottom: 0;
+}
+
+/* FIXED: Insertion Zone Styles */
+.insertion-indicator {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(37, 99, 235, 0.3);
+    border: 2px dashed var(--primary);
+    border-radius: 50%;
+    z-index: 5;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.insertion-indicator:hover {
+    transform: scale(1.5);
+    background: rgba(37, 99, 235, 0.6);
+    opacity: 1;
+}
+
+.floating-insertion-zone {
+    position: absolute;
+    background: rgba(255, 165, 0, 0.3);
+    border: 3px dashed orange;
+    border-radius: 50%;
+    z-index: 6;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+    cursor: pointer;
+    pointer-events: auto;
+    animation: floating-pulse 2s infinite;
+}
+
+.floating-insertion-zone:hover {
+    transform: scale(1.3);
+    background: rgba(255, 165, 0, 0.7);
+    opacity: 1;
+}
+
+.floating-insertion-zone.active {
+    animation: none;
+    transform: scale(1.4) !important;
+    background: rgba(255, 165, 0, 0.9) !important;
+}
+
+@keyframes floating-pulse {
+    0%, 100% { 
+        transform: scale(1) rotate(0deg); 
+    }
+    50% { 
+        transform: scale(1.1) rotate(5deg); 
+    }
 }
 
 @keyframes fadeIn {

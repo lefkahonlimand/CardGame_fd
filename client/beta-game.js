@@ -1,3 +1,184 @@
+// 🎯 UNIFIED DROP-ZONE SYSTEM - Core Calculator Class
+class DropZoneCalculator {
+    constructor(gameState) {
+        this.gameState = gameState;
+        this.board = gameState.board || {};
+        this.boardPositions = new Set(Object.keys(this.board));
+    }
+    
+    /**
+     * Central method: Calculate ALL valid drop positions based on current game state
+     * @returns {Array} Array of position objects with type and coordinates
+     */
+    calculateAllValidPositions() {
+        const validPositions = [];
+        
+        // 🎯 STATE 1: Empty Board - Only origin allowed
+        if (this.boardPositions.size === 0) {
+            validPositions.push({
+                x: 0,
+                y: 0,
+                type: 'origin',
+                description: 'First card - origin position'
+            });
+            return validPositions;
+        }
+        
+        // 🎯 STATE 2: Only origin card - Add 4 directions
+        if (this.boardPositions.size === 1 && this.board['0,0']) {
+            const directions = [
+                { x: 1, y: 0, type: 'extension', axis: 'horizontal', description: 'Right from origin' },
+                { x: -1, y: 0, type: 'extension', axis: 'horizontal', description: 'Left from origin' },
+                { x: 0, y: 1, type: 'extension', axis: 'vertical', description: 'Up from origin' },
+                { x: 0, y: -1, type: 'extension', axis: 'vertical', description: 'Down from origin' }
+            ];
+            validPositions.push(...directions);
+            return validPositions;
+        }
+        
+        // 🎯 STATE 3: Multiple cards - Calculate extensions and insertions
+        this.addAxisExtensions(validPositions);
+        this.addInsertionZones(validPositions);
+        
+        return validPositions;
+    }
+    
+    /**
+     * Add extension positions at the ends of existing axes
+     */
+    addAxisExtensions(validPositions) {
+        const horizontalCards = this.getCardsOnAxis('horizontal');
+        const verticalCards = this.getCardsOnAxis('vertical');
+        
+        // Horizontal axis extensions
+        if (horizontalCards.length > 0) {
+            const xPositions = horizontalCards.map(card => card.x).sort((a, b) => a - b);
+            const leftMost = Math.min(...xPositions);
+            const rightMost = Math.max(...xPositions);
+            
+            // Left extension
+            const leftPos = `${leftMost - 1},0`;
+            if (!this.boardPositions.has(leftPos)) {
+                validPositions.push({
+                    x: leftMost - 1,
+                    y: 0,
+                    type: 'extension',
+                    axis: 'horizontal',
+                    description: `Extend horizontal axis left`
+                });
+            }
+            
+            // Right extension
+            const rightPos = `${rightMost + 1},0`;
+            if (!this.boardPositions.has(rightPos)) {
+                validPositions.push({
+                    x: rightMost + 1,
+                    y: 0,
+                    type: 'extension',
+                    axis: 'horizontal',
+                    description: `Extend horizontal axis right`
+                });
+            }
+        }
+        
+        // Vertical axis extensions
+        if (verticalCards.length > 0) {
+            const yPositions = verticalCards.map(card => card.y).sort((a, b) => a - b);
+            const bottomMost = Math.min(...yPositions);
+            const topMost = Math.max(...yPositions);
+            
+            // Bottom extension
+            const bottomPos = `0,${bottomMost - 1}`;
+            if (!this.boardPositions.has(bottomPos)) {
+                validPositions.push({
+                    x: 0,
+                    y: bottomMost - 1,
+                    type: 'extension',
+                    axis: 'vertical',
+                    description: `Extend vertical axis down`
+                });
+            }
+            
+            // Top extension
+            const topPos = `0,${topMost + 1}`;
+            if (!this.boardPositions.has(topPos)) {
+                validPositions.push({
+                    x: 0,
+                    y: topMost + 1,
+                    type: 'extension',
+                    axis: 'vertical',
+                    description: `Extend vertical axis up`
+                });
+            }
+        }
+    }
+    
+    /**
+     * Add insertion positions between existing cards
+     */
+    addInsertionZones(validPositions) {
+        const horizontalCards = this.getCardsOnAxis('horizontal');
+        const verticalCards = this.getCardsOnAxis('vertical');
+        
+        // Horizontal insertions (between cards on x=?, y=0)
+        if (horizontalCards.length >= 2) {
+            horizontalCards.sort((a, b) => a.x - b.x);
+            for (let i = 1; i < horizontalCards.length; i++) {
+                const insertX = horizontalCards[i].x;
+                const insertPos = `${insertX},0`;
+                
+                if (!this.boardPositions.has(insertPos)) {
+                    validPositions.push({
+                        x: insertX,
+                        y: 0,
+                        type: 'insertion',
+                        axis: 'horizontal',
+                        description: `Insert before card at (${insertX},0)`
+                    });
+                }
+            }
+        }
+        
+        // Vertical insertions (between cards on x=0, y=?)
+        if (verticalCards.length >= 2) {
+            verticalCards.sort((a, b) => a.y - b.y);
+            for (let i = 1; i < verticalCards.length; i++) {
+                const insertY = verticalCards[i].y;
+                const insertPos = `0,${insertY}`;
+                
+                if (!this.boardPositions.has(insertPos)) {
+                    validPositions.push({
+                        x: 0,
+                        y: insertY,
+                        type: 'insertion',
+                        axis: 'vertical',
+                        description: `Insert before card at (0,${insertY})`
+                    });
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get all cards on a specific axis
+     */
+    getCardsOnAxis(axis) {
+        const cards = [];
+        
+        Object.entries(this.board).forEach(([position, card]) => {
+            const [x, y] = position.split(',').map(Number);
+            
+            if (axis === 'horizontal' && y === 0) {
+                cards.push({ x, y, position, card });
+            } else if (axis === 'vertical' && x === 0) {
+                cards.push({ x, y, position, card });
+            }
+        });
+        
+        return cards;
+    }
+}
+
 // Game State Management
 class GameManager {
     constructor() {
@@ -16,6 +197,194 @@ class GameManager {
         this.setupEventListeners();
         
         this.debug?.logGameEvent('GameManager initialized successfully');
+    }
+    
+    // FIXED: Initialize zoom/pan functionality for game board
+    initializeZoomPanFunctionality() {
+        if (!this.elements.gameBoard) {
+            console.error('Game board element not found for zoom/pan initialization');
+            return;
+        }
+        
+        // Initialize zoom/pan state
+        this.zoomPanState = {
+            scale: 1.0,
+            translateX: 0,
+            translateY: 0,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            minScale: 0.3,
+            maxScale: 3.0
+        };
+        
+        // Center the game board initially
+        this.centerGameBoard();
+        
+        // Setup zoom/pan event handlers
+        this.setupZoomEventHandlers();
+        this.setupPanEventHandlers();
+        
+        console.log('🔧 Zoom/Pan functionality initialized');
+    }
+    
+    // FIXED: Center the game board to show coordinate origin (0,0)
+    centerGameBoard() {
+        const gameBoard = this.elements.gameBoard;
+        if (!gameBoard) return;
+        
+        // Reset zoom/pan to center position
+        if (this.zoomPanState) {
+            this.zoomPanState.scale = 1.0;
+            this.zoomPanState.translateX = 0;
+            this.zoomPanState.translateY = 0;
+            
+            this.applyTransform();
+            
+            console.log('🔧 Game board centered with zoom/pan system');
+        }
+    }
+    
+    // FIXED: Setup zoom event handlers (mouse wheel)
+    setupZoomEventHandlers() {
+        const gameBoard = this.elements.gameBoard;
+        if (!gameBoard) return;
+        
+        gameBoard.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            const rect = gameBoard.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Calculate zoom factor
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(this.zoomPanState.minScale, 
+                             Math.min(this.zoomPanState.maxScale, 
+                                     this.zoomPanState.scale * zoomFactor));
+            
+            if (newScale !== this.zoomPanState.scale) {
+                // Calculate zoom center point
+                const scaleDiff = newScale / this.zoomPanState.scale;
+                
+                // Adjust translation to zoom towards mouse position
+                this.zoomPanState.translateX = mouseX - (mouseX - this.zoomPanState.translateX) * scaleDiff;
+                this.zoomPanState.translateY = mouseY - (mouseY - this.zoomPanState.translateY) * scaleDiff;
+                this.zoomPanState.scale = newScale;
+                
+                this.applyTransform();
+                
+                console.log('🔍 Zoom:', {
+                    scale: this.zoomPanState.scale.toFixed(2),
+                    translateX: this.zoomPanState.translateX.toFixed(0),
+                    translateY: this.zoomPanState.translateY.toFixed(0)
+                });
+            }
+        });
+    }
+    
+    // FIXED: Setup pan event handlers (mouse drag)
+    setupPanEventHandlers() {
+        const gameBoard = this.elements.gameBoard;
+        if (!gameBoard) return;
+        
+        // Mouse down - start panning
+        gameBoard.addEventListener('mousedown', (e) => {
+            // Only pan with left mouse button and no modifier keys
+            if (e.button === 0 && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                // Don't pan if clicking on a game element
+                if (e.target.closest('.card, .drop-zone, .insertion-indicator, .floating-insertion-zone')) {
+                    return;
+                }
+                
+                this.zoomPanState.isDragging = true;
+                this.zoomPanState.lastMouseX = e.clientX;
+                this.zoomPanState.lastMouseY = e.clientY;
+                
+                gameBoard.style.cursor = 'grabbing';
+                e.preventDefault();
+                
+                console.log('🖱️ Pan started');
+            }
+        });
+        
+        // Mouse move - pan if dragging
+        gameBoard.addEventListener('mousemove', (e) => {
+            if (this.zoomPanState.isDragging) {
+                const deltaX = e.clientX - this.zoomPanState.lastMouseX;
+                const deltaY = e.clientY - this.zoomPanState.lastMouseY;
+                
+                this.zoomPanState.translateX += deltaX;
+                this.zoomPanState.translateY += deltaY;
+                
+                this.zoomPanState.lastMouseX = e.clientX;
+                this.zoomPanState.lastMouseY = e.clientY;
+                
+                this.applyTransform();
+                
+                e.preventDefault();
+            } else {
+                // Show grab cursor when over pannable area
+                if (!e.target.closest('.card, .drop-zone, .insertion-indicator, .floating-insertion-zone')) {
+                    gameBoard.style.cursor = 'grab';
+                } else {
+                    gameBoard.style.cursor = '';
+                }
+            }
+        });
+        
+        // Mouse up - stop panning
+        gameBoard.addEventListener('mouseup', (e) => {
+            if (this.zoomPanState.isDragging) {
+                this.zoomPanState.isDragging = false;
+                gameBoard.style.cursor = 'grab';
+                
+                console.log('🖱️ Pan ended:', {
+                    translateX: this.zoomPanState.translateX.toFixed(0),
+                    translateY: this.zoomPanState.translateY.toFixed(0)
+                });
+            }
+        });
+        
+        // Mouse leave - stop panning
+        gameBoard.addEventListener('mouseleave', (e) => {
+            if (this.zoomPanState.isDragging) {
+                this.zoomPanState.isDragging = false;
+                gameBoard.style.cursor = '';
+            }
+        });
+        
+        // Prevent context menu on right click
+        gameBoard.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    }
+    
+    // Apply the current transform to all coordinated containers
+    applyTransform() {
+        const axisGrid = this.elements.gameBoard.querySelector('.axis-grid');
+        const boardCards = this.elements.gameBoard.querySelector('.board-cards');
+        const dropZones = this.elements.gameBoard.querySelector('.drop-zones');
+        
+        // FIXED: Coordinate all containers with same transform
+        const transform = `translate(${this.zoomPanState.translateX}px, ${this.zoomPanState.translateY}px) scale(${this.zoomPanState.scale}) translate(-50%, -50%)`;
+        
+        if (axisGrid) {
+            axisGrid.style.transform = transform;
+        }
+        if (boardCards) {
+            boardCards.style.transform = transform;
+        }
+        if (dropZones) {
+            dropZones.style.transform = transform;
+        }
+        
+        // FIXED: Also apply to any insertion indicators
+        const insertionIndicators = this.elements.gameBoard.querySelectorAll('.insertion-indicator, .floating-insertion-zone');
+        insertionIndicators.forEach(indicator => {
+            // These are positioned relative to the board, so they need the same transform
+            indicator.parentElement.style.transform = transform;
+        });
     }
 
     initializeElements() {
@@ -47,6 +416,9 @@ class GameManager {
             menuGameStatus: document.getElementById('menu-game-status'),
             menuConnectionStatus: document.getElementById('menu-connection-status')
         };
+        
+        // FIXED: Initialize zoom/pan functionality
+        this.initializeZoomPanFunctionality();
     }
 
     connectToServer() {
@@ -391,6 +763,8 @@ class GameManager {
     }
 
     updateBoard() {
+        console.log('🔧 DEBUG: updateBoard called, board state:', this.gameState.board);
+        
         // Clear existing board cards
         this.elements.boardCards.innerHTML = '';
         this.elements.dropZones.innerHTML = '';
@@ -398,14 +772,20 @@ class GameManager {
 
         // Add board cards
         Object.entries(this.gameState.board).forEach(([position, card]) => {
+            console.log('🔧 DEBUG: Creating board card at position:', position, 'card:', card.name);
             const [x, y] = position.split(',').map(Number);
             const cardElement = this.createBoardCard(card, x, y);
             this.elements.boardCards.appendChild(cardElement);
         });
 
+        console.log('🔧 DEBUG: Board cards created, total:', Object.keys(this.gameState.board).length);
+
         // Generate drop zones if it's the player's turn
         if (this.gameState.currentPlayer === this.myPlayerId && this.gameState.gameStatus === 'running') {
+            console.log('🔧 DEBUG: Generating drop zones for current player');
             this.generateDropZones();
+        } else {
+            console.log('🔧 DEBUG: Not generating drop zones - currentPlayer:', this.gameState.currentPlayer, 'myPlayerId:', this.myPlayerId, 'gameStatus:', this.gameState.gameStatus);
         }
     }
 
@@ -417,14 +797,15 @@ class GameManager {
         const cardWidth = 100;
         const cardHeight = 140;
         
-        // Position calculation relative to center
-        const posX = (x * gridSize) + (this.elements.gameBoard.offsetWidth / 2) - (cardWidth / 2);
-        const posY = (-y * gridSize) + (this.elements.gameBoard.offsetHeight / 2) - (cardHeight / 2);
+        // FIXED: Position calculation for board-cards container coordinate system
+        // The board-cards container is 4000px and centered, so we calculate from the center (2000px)
+        const posX = (x * gridSize) + 2000 - (cardWidth / 2);
+        const posY = (-y * gridSize) + 2000 - (cardHeight / 2);
         
         cardElement.style.left = `${posX}px`;
         cardElement.style.top = `${posY}px`;
         // Wichtig: Sehr niedrige z-index für Board-Karten, damit sie definitiv unter Popups liegen
-        cardElement.style.zIndex = '1';
+        cardElement.style.zIndex = '3';
         cardElement.style.position = 'absolute';
 
         const placeholder = this.getCardPlaceholder(card);
@@ -445,36 +826,288 @@ class GameManager {
     }
 
     generateDropZones() {
-        if (!this.gameState.board || Object.keys(this.gameState.board).length === 0) {
-            // First card - only center position
-            this.createDropZone(0, 0);
-            return;
+        console.log('🔧 DEBUG: generateDropZones called, board state:', Object.keys(this.gameState.board || {}).length);
+        
+        // FIXED: Always check if origin position (0,0) is empty and create drop zone
+        if (!this.gameState.board || !this.gameState.board['0,0']) {
+            console.log('🔧 DEBUG: Origin position (0,0) is empty - creating drop zone there');
+            this.createUnifiedDropZone({
+                x: 0,
+                y: 0,
+                type: 'origin',
+                description: 'First card - origin position'
+            });
+            
+            // If board is completely empty, only show origin drop zone
+            if (!this.gameState.board || Object.keys(this.gameState.board).length === 0) {
+                console.log('🔧 DEBUG: Board completely empty - only showing origin drop zone');
+                return;
+            }
         }
 
         const boardPositions = new Set(Object.keys(this.gameState.board));
         const possiblePositions = new Set();
 
-        // NEUE STRAHLEN-LOGIK: Erweitere nur die Enden der beiden Strahlen
-        this.generateRayExtensions(boardPositions, possiblePositions);
+    // 🎯 UNIFIED DROP-ZONE SYSTEM - Einheitliche Logik für alle Drop-Zones
+        const dropZoneCalculator = new DropZoneCalculator(this.gameState);
+        const validPositions = dropZoneCalculator.calculateAllValidPositions();
         
-        // NEUE INSERTION-ZONES mit Floating-Position Ansatz
-        this.generateFloatingInsertionZones(boardPositions, possiblePositions);
-
-        // Create drop zones for valid positions
-        possiblePositions.forEach(position => {
-            const [x, y] = position.split(',').map(Number);
-            
-            // Für Floating-Positions (Dezimalzahlen) erstelle visuelle Insertion-Indicator
-            if (!Number.isInteger(x) || !Number.isInteger(y)) {
-                console.log(`🔧 DEBUG: Creating floating insertion indicator at ${position}`);
-                this.createFloatingInsertionZone(x, y, position);
-            } else {
-                // Normale Drop-Zone für ganzzahlige Positionen
-                this.createDropZone(x, y);
-            }
+        console.log('🎯 DEBUG: Unified Drop-Zone System calculated positions:', validPositions);
+        
+        // Erstelle einheitliche Drop-Zones für alle gültigen Positionen
+        validPositions.forEach(positionData => {
+            this.createUnifiedDropZone(positionData);
         });
+        
+        console.log(`🎯 DEBUG: Created ${validPositions.length} unified drop zones`);
     }
     
+    /**
+     * 🎯 UNIFIED DROP ZONE CREATION - Single method for all drop zone types
+     * Creates a visual drop zone based on position data from the calculator
+     */
+    createUnifiedDropZone(positionData) {
+        const { x, y, type, axis, description } = positionData;
+        
+        const dropZone = document.createElement('div');
+        dropZone.className = `drop-zone unified-drop-zone ${type}-zone`;
+        dropZone.dataset.x = x;
+        dropZone.dataset.y = y;
+        dropZone.dataset.type = type;
+        dropZone.dataset.axis = axis || 'none';
+        dropZone.title = description; // Tooltip for debugging
+        
+        // Visual styling based on type
+        this.styleDropZoneByType(dropZone, type);
+        
+        // Position calculation
+        this.positionDropZone(dropZone, x, y);
+        
+        // Event handlers - same for all types
+        this.attachDropZoneEvents(dropZone);
+        
+        // Add to DOM and tracking
+        this.elements.dropZones.appendChild(dropZone);
+        this.dropZones.set(`${x},${y}`, dropZone);
+        
+        console.log(`🎯 DEBUG: Created ${type} drop zone at (${x}, ${y}) - ${description}`);
+    }
+    
+    /**
+     * Style drop zones based on their type
+     */
+    styleDropZoneByType(dropZone, type) {
+        // Base styles
+        const baseStyle = {
+            position: 'absolute',
+            width: '100px',
+            height: '140px',
+            borderRadius: '8px',
+            border: '2px dashed',
+            zIndex: '3',
+            transition: 'all 0.3s ease',
+            opacity: '0.7',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold'
+        };
+        
+        // Type-specific styles
+        const typeStyles = {
+            origin: {
+                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                borderColor: '#22c55e',
+                content: '🎯'
+            },
+            extension: {
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: '#3b82f6',
+                content: '➕'
+            },
+            insertion: {
+                backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                borderColor: '#f97316',
+                content: '📥'
+            }
+        };
+        
+        const style = { ...baseStyle, ...typeStyles[type] };
+        
+        // Apply styles
+        Object.assign(dropZone.style, style);
+        dropZone.textContent = style.content;
+    }
+    
+    /**
+     * Position drop zone in the game board
+     */
+    positionDropZone(dropZone, x, y) {
+        const gridSize = 150;
+        const cardWidth = 100;
+        const cardHeight = 140;
+        
+        // FIXED: Position calculation for drop-zones container coordinate system
+        // The drop-zones container is 4000px and centered, so we calculate from the center (2000px)
+        const posX = (x * gridSize) + 2000 - (cardWidth / 2);
+        const posY = (-y * gridSize) + 2000 - (cardHeight / 2);
+        
+        dropZone.style.left = `${posX}px`;
+        dropZone.style.top = `${posY}px`;
+    }
+    
+    /**
+     * Attach unified event handlers to drop zones
+     */
+    attachDropZoneEvents(dropZone) {
+        dropZone.addEventListener('dragover', (e) => this.handleUnifiedDragOver(e, dropZone));
+        dropZone.addEventListener('dragenter', (e) => this.handleUnifiedDragEnter(e, dropZone));
+        dropZone.addEventListener('dragleave', (e) => this.handleUnifiedDragLeave(e, dropZone));
+        dropZone.addEventListener('drop', (e) => this.handleUnifiedDrop(e, dropZone));
+    }
+    
+    /**
+     * 🎯 UNIFIED DRAG & DROP HANDLERS - Handle all drop zone interactions
+     */
+    handleUnifiedDragOver(e, dropZone) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+    
+    handleUnifiedDragEnter(e, dropZone) {
+        e.preventDefault();
+        const { x, y, type } = dropZone.dataset;
+        
+        dropZone.classList.add('active');
+        
+        // Client-side validation preview
+        if (this.draggedCard) {
+            const isValid = this.validateUnifiedCardPlacement(this.draggedCard, parseInt(x), parseInt(y), type);
+            dropZone.classList.add(isValid ? 'valid' : 'invalid');
+            
+            // Enhanced visual feedback
+            if (isValid) {
+                dropZone.style.transform = 'scale(1.1)';
+                dropZone.style.opacity = '0.9';
+            } else {
+                dropZone.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+                dropZone.style.borderColor = '#ef4444';
+            }
+        }
+    }
+    
+    handleUnifiedDragLeave(e, dropZone) {
+        dropZone.classList.remove('active', 'valid', 'invalid');
+        dropZone.style.transform = 'scale(1)';
+        dropZone.style.opacity = '0.7';
+        
+        // Reset type-specific styling
+        const type = dropZone.dataset.type;
+        this.styleDropZoneByType(dropZone, type);
+    }
+    
+    handleUnifiedDrop(e, dropZone) {
+        e.preventDefault();
+        const { x, y, type } = dropZone.dataset;
+        
+        if (this.draggedCard) {
+            const cardId = this.draggedCard.id;
+            const placeAt = `${x},${y}`;
+            
+            console.log(`🎯 DEBUG: Unified drop - Card ${cardId} at ${placeAt}, type: ${type}`);
+            
+            // Determine if this is an insertion move
+            const insertionMode = type === 'insertion';
+            
+            // Send to server with appropriate parameters
+            const moveData = { cardId, placeAt };
+            if (insertionMode) {
+                moveData.insertionMode = true;
+            }
+            
+            this.socket.emit('playerMove', moveData);
+            
+            // Visual feedback
+            const draggedElement = document.querySelector(`[data-card-id="${cardId}"]`);
+            if (draggedElement) {
+                draggedElement.classList.add('card-play-animation');
+            }
+        }
+        
+        // Clean up
+        this.handleUnifiedDragLeave(e, dropZone);
+    }
+    
+    /**
+     * 🎯 UNIFIED VALIDATION - Validate card placement for all drop zone types
+     */
+    validateUnifiedCardPlacement(card, x, y, type) {
+        const position = `${x},${y}`;
+        
+        // Can't place on occupied position
+        if (this.gameState.board[position]) {
+            return false;
+        }
+        
+        // Type-specific validation
+        switch (type) {
+            case 'origin':
+                // Origin is always valid if empty
+                return Object.keys(this.gameState.board).length === 0;
+                
+            case 'extension':
+                // Extensions must extend existing axes
+                return this.validateAxisExtension(card, x, y);
+                
+            case 'insertion':
+                // Insertions must have adjacent cards for shifting
+                return this.validateInsertion(card, x, y);
+                
+            default:
+                return false;
+        }
+    }
+    
+    validateAxisExtension(card, x, y) {
+        // Must be on an axis
+        if (x !== 0 && y !== 0) {
+            return false;
+        }
+        
+        // Must have appropriate card dimensions
+        if (y === 0 && (card.width === null || card.width === undefined)) {
+            return false; // Horizontal axis needs width
+        }
+        if (x === 0 && (card.height === null || card.height === undefined)) {
+            return false; // Vertical axis needs height
+        }
+        
+        // Must have adjacent cards on the same axis
+        const neighbors = [`${x+1},${y}`, `${x-1},${y}`, `${x},${y+1}`, `${x},${y-1}`];
+        return neighbors.some(pos => this.gameState.board[pos]);
+    }
+    
+    validateInsertion(card, x, y) {
+        // Insertion requires cards that will be shifted
+        // This is a simplified check - server will do the full validation
+        const axisCards = this.getCardsOnSameAxis(x, y);
+        return axisCards.length >= 2;
+    }
+    
+    getCardsOnSameAxis(x, y) {
+        const cards = [];
+        Object.entries(this.gameState.board).forEach(([position, card]) => {
+            const [cardX, cardY] = position.split(',').map(Number);
+            if ((x === 0 && cardX === 0) || (y === 0 && cardY === 0)) {
+                cards.push({ x: cardX, y: cardY, card });
+            }
+        });
+        return cards;
+    }
+    
+    // 🎯 LEGACY FUNCTIONS - Kept for gradual migration, will be removed
     generateRayExtensions(boardPositions, possiblePositions) {
         // Finde die Enden beider Strahlen
         const horizontalPositions = [];
@@ -533,8 +1166,10 @@ class GameManager {
         
         // Falls es nur die Ursprungskarte gibt, erlaube alle 4 Richtungen
         if (Object.keys(this.gameState.board).length === 1 && this.gameState.board['0,0']) {
+            console.log('🔧 DEBUG: Only origin card present, adding 4 directional drop zones');
             ['1,0', '-1,0', '0,1', '0,-1'].forEach(pos => {
                 if (!boardPositions.has(pos)) {
+                    console.log(`🔧 DEBUG: Adding directional drop zone: ${pos}`);
                     possiblePositions.add(pos);
                 }
             });
@@ -838,14 +1473,28 @@ class GameManager {
         this.hideInsertionIndicators();
         
         if (!this.gameState.board || Object.keys(this.gameState.board).length === 0) {
-            console.log('🔧 DEBUG: Board is empty, no insertion indicators needed');
-            return; // Keine Insertion-Zones wenn Board leer ist
+            console.log('🔧 DEBUG: Board is empty, creating insertion indicator at origin (0,0)');
+            // Wenn Board leer ist, zeige nur die Ursprungsposition (0,0) als Drop-Zone
+            this.createInsertionIndicator(0, 0);
+            return;
         }
         
         console.log('🔧 DEBUG: Board state:', Object.keys(this.gameState.board));
         
         // Erstelle Insertion-Zones zwischen allen Karten
         const insertionPositions = new Set();
+        
+        // NEUE LOGIK: Falls es nur die Ursprungskarte gibt, erlaube alle 4 Richtungen (genau wie bei generateDropZones)
+        if (Object.keys(this.gameState.board).length === 1 && this.gameState.board['0,0']) {
+            console.log('🔧 DEBUG: Only origin card present for insertion indicators, adding 4 directional indicators');
+            ['1,0', '-1,0', '0,1', '0,-1'].forEach(pos => {
+                const [x, y] = pos.split(',').map(Number);
+                console.log(`🔧 DEBUG: Adding directional insertion indicator: ${pos}`);
+                this.createInsertionIndicator(x, y);
+            });
+            return;
+        }
+        
         this.addHorizontalInsertionZones(new Set(Object.keys(this.gameState.board)), insertionPositions);
         this.addVerticalInsertionZones(new Set(Object.keys(this.gameState.board)), insertionPositions);
         
@@ -899,9 +1548,10 @@ class GameManager {
         const gridSize = 150;
         const indicatorSize = 20;
         
-        // Position berechnen
-        const posX = (x * gridSize) + (this.elements.gameBoard.offsetWidth / 2) - (indicatorSize / 2);
-        const posY = (-y * gridSize) + (this.elements.gameBoard.offsetHeight / 2) - (indicatorSize / 2);
+        // FIXED: Position calculation for drop-zones container coordinate system
+        // The drop-zones container is 4000px and centered, so we calculate from the center (2000px)
+        const posX = (x * gridSize) + 2000 - (indicatorSize / 2);
+        const posY = (-y * gridSize) + 2000 - (indicatorSize / 2);
         
         indicator.style.left = `${posX}px`;
         indicator.style.top = `${posY}px`;
@@ -914,6 +1564,7 @@ class GameManager {
         indicator.style.zIndex = '5';
         indicator.style.transition = 'all 0.2s ease';
         indicator.style.opacity = '0.7';
+        indicator.style.pointerEvents = 'auto';
         
         // Hover-Effekt
         indicator.addEventListener('mouseenter', () => {
@@ -946,7 +1597,8 @@ class GameManager {
             }
         });
         
-        this.elements.gameBoard.appendChild(indicator);
+        // FIXED: Add to drop-zones container instead of game-board
+        this.elements.dropZones.appendChild(indicator);
     }
     
     createFloatingInsertionZone(x, y, originalPosition) {
